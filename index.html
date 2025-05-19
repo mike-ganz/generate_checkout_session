@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout Redirect</title>
+</head>
+<body>
+  <p>Redirecting to payment...</p>
+  <script>
+    async function redirectToPayment() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get('email');
+
+      if (!email) {
+        document.body.innerHTML = '<p>Error: "email" parameter is missing in the URL.</p>';
+        return;
+      }
+
+      try {
+        // Step 2: Get user from email
+        const userResp = await fetch(`https://xlw5-kd1n-crdj.n7c.xano.io/api:-VPGC53-/user_from_email?email=${encodeURIComponent(email)}`);
+        const userData = await userResp.json();
+
+        if (!userData || !Array.isArray(userData) || userData.length === 0 || !userData[0].id) {
+          throw new Error('Invalid user data received.');
+        }
+
+        const userId = userData[0].id;
+
+        // Step 4: Generate checkout session
+        const price = 14.99;
+        const checkoutResp = await fetch(
+          `https://xlw5-kd1n-crdj.n7c.xano.io/api:WkWaIJAD/generate_checkout_session?user_id=${userId}&price=${price}`
+        );
+        const checkoutData = await checkoutResp.json();
+
+        if (!checkoutData || !checkoutData.payment_link) {
+          throw new Error('Invalid checkout data received.');
+        }
+
+        // Step 5: Redirect to payment link
+        window.location.href = checkoutData.payment_link;
+
+      } catch (error) {
+        console.error(error);
+        document.body.innerHTML = `<p>Error: ${error.message}</p>`;
+      }
+    }
+
+    redirectToPayment();
+  </script>
+</body>
+</html>
