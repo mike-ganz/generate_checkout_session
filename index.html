@@ -11,9 +11,20 @@
     async function redirectToPayment() {
       const urlParams = new URLSearchParams(window.location.search);
       const email = urlParams.get('email');
+      const plan = urlParams.get('plan');
 
       if (!email) {
         document.body.innerHTML = '<p>Error: "email" parameter is missing in the URL.</p>';
+        return;
+      }
+
+      let price;
+      if (plan === 'monthly') {
+        price = 14.99;
+      } else if (plan === 'annual') {
+        price = 125.99;
+      } else {
+        document.body.innerHTML = '<p>Error: Invalid or missing "plan" parameter. Use "monthly" or "annual".</p>';
         return;
       }
 
@@ -28,8 +39,7 @@
 
         const userId = userData[0].id;
 
-        // Step 4: Generate checkout session
-        const price = 14.99;
+        // Step 4: Generate checkout session with dynamic price
         const checkoutResp = await fetch(
           `https://xlw5-kd1n-crdj.n7c.xano.io/api:WkWaIJAD/generate_checkout_session?user_id=${userId}&price=${price}`
         );
